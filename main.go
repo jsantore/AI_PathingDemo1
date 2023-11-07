@@ -8,14 +8,16 @@ import (
 	"github.com/lafriks/go-tiled"
 	"log"
 	"path"
+	"strings"
 )
 
 //go:embed assets/*
 var embeddedFiles embed.FS
 
 type PathMapDemo struct {
-	Level    *tiled.Map
-	tileHash map[uint32]*ebiten.Image
+	Level          *tiled.Map
+	tileHash       map[uint32]*ebiten.Image
+	pathFindingMap []string
 }
 
 func (m PathMapDemo) Update() error {
@@ -43,13 +45,14 @@ func (m PathMapDemo) Layout(outsideWidth, outsideHeight int) (screenWidth, scree
 
 func main() {
 	gameMap := loadMapFromEmbedded(path.Join("assets", "MapForPaths.tmx"))
-	fmt.Println("gameMap.Layers[0].Tiles:", gameMap.Layers[0].Tiles)
+	pathMap := makeSearchMap(gameMap)
 	ebiten.SetWindowSize(gameMap.TileWidth*gameMap.Width, gameMap.TileHeight*gameMap.Height)
 	ebiten.SetWindowTitle("Maps Embedded")
-	ebitenImageMap := makeEbiteImagesFromMap(*gameMap)
+	ebitenImageMap := makeEbitenImagesFromMap(*gameMap)
 	oneLevelGame := PathMapDemo{
-		Level:    gameMap,
-		tileHash: ebitenImageMap,
+		Level:          gameMap,
+		tileHash:       ebitenImageMap,
+		pathFindingMap: pathMap,
 	}
 	err := ebiten.RunGame(&oneLevelGame)
 	if err != nil {
@@ -65,7 +68,20 @@ func loadMapFromEmbedded(name string) *tiled.Map {
 	return embeddedMap
 }
 
-func makeEbiteImagesFromMap(tiledMap tiled.Map) map[uint32]*ebiten.Image {
+func makeSearchMap(tiledMap *tiled.Map) []string {
+	mapAsStringSlice := make([]string, tiledMap.Height) //each row will be its own string
+	row := strings.Builder{}
+	for position, tile := range tiledMap.Tilesets[0].Tiles {
+		if position%tiledMap.Width == 0 { // we get the 2d array as an unrolled one-d array
+			mapAsStringSlice = append(mapAsStringSlice, row.String())
+			row = strings.Builder{}
+		}
+		row.WriteString(fmt.Sprintf("%d", tile.ID))
+	}
+	return mapAsStringSlice
+}
+
+func makeEbitenImagesFromMap(tiledMap tiled.Map) map[uint32]*ebiten.Image {
 	idToImage := make(map[uint32]*ebiten.Image)
 	for _, tile := range tiledMap.Tilesets[0].Tiles {
 		embeddedFile, err := embeddedFiles.Open(path.Join("assets", tile.Image.Source))
