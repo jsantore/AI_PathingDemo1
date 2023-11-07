@@ -25,7 +25,6 @@ type PathMapDemo struct {
 	npc            NonPlayerChar
 	pathMap        *paths.Grid
 	path           *paths.Path
-	delay          int
 }
 
 type coinPile struct {
@@ -42,7 +41,6 @@ type NonPlayerChar struct {
 
 func (demo *PathMapDemo) Update() error {
 	checkMouse(demo)
-	demo.delay++
 	if demo.path != nil {
 		pathCell := demo.path.Current()
 		if math.Abs(float64(pathCell.X*demo.Level.TileWidth)-(demo.npc.xloc)) <= 2 &&
@@ -116,7 +114,6 @@ func main() {
 	searchablePathMap.SetWalkable('3', false)
 	coins := makeCoinPile()
 	nonPlayer := makeNPC()
-	fmt.Println(pathMap)
 	ebiten.SetWindowSize(gameMap.TileWidth*gameMap.Width, gameMap.TileHeight*gameMap.Height)
 	ebiten.SetWindowTitle("Maps Embedded")
 	ebitenImageMap := makeEbitenImagesFromMap(*gameMap)
