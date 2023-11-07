@@ -46,6 +46,7 @@ func (m PathMapDemo) Layout(outsideWidth, outsideHeight int) (screenWidth, scree
 func main() {
 	gameMap := loadMapFromEmbedded(path.Join("assets", "MapForPaths.tmx"))
 	pathMap := makeSearchMap(gameMap)
+	fmt.Println(pathMap)
 	ebiten.SetWindowSize(gameMap.TileWidth*gameMap.Width, gameMap.TileHeight*gameMap.Height)
 	ebiten.SetWindowTitle("Maps Embedded")
 	ebitenImageMap := makeEbitenImagesFromMap(*gameMap)
@@ -69,15 +70,16 @@ func loadMapFromEmbedded(name string) *tiled.Map {
 }
 
 func makeSearchMap(tiledMap *tiled.Map) []string {
-	mapAsStringSlice := make([]string, tiledMap.Height) //each row will be its own string
+	mapAsStringSlice := make([]string, 0, tiledMap.Height) //each row will be its own string
 	row := strings.Builder{}
-	for position, tile := range tiledMap.Tilesets[0].Tiles {
+	for position, tile := range tiledMap.Layers[0].Tiles {
 		if position%tiledMap.Width == 0 { // we get the 2d array as an unrolled one-d array
 			mapAsStringSlice = append(mapAsStringSlice, row.String())
 			row = strings.Builder{}
 		}
 		row.WriteString(fmt.Sprintf("%d", tile.ID))
 	}
+	mapAsStringSlice = append(mapAsStringSlice, row.String())
 	return mapAsStringSlice
 }
 
