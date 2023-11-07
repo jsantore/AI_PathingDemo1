@@ -5,6 +5,7 @@ go 1.21
 require (
 	github.com/hajimehoshi/ebiten/v2 v2.6.2
 	github.com/lafriks/go-tiled v0.12.0
+	github.com/solarlune/paths v0.0.0-20230130082802-0494358a2ca6
 )
 
 require (
